@@ -12,7 +12,7 @@ class TestOrderBook(unittest.TestCase):
     """
     def test_valid_orders_buy_and_sell_count(self):
 
-        testOrdersNum = 100
+        testOrdersNum = 1000000
         testBuyOrdersList = [ str(time.time())+' B '+ str(i) + ' ' + str(i/7.0) for i in range(1, testOrdersNum + 1)]
         testSellOrdersList = [ str(time.time())+' S '+ str(i + testOrdersNum/2) +' '+ str(i/7.0) for i in range(1, testOrdersNum + 1)]
 

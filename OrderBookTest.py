@@ -1,53 +1,67 @@
 from OrderBook import OrderBook
 import unittest
 import numpy as np
+import time
 
 
 
 
-class TestNextNum(unittest.TestCase):
+class TestOrderBook(unittest.TestCase):
     """
-    Unit-tests for the next_num functionality
+    Unit-tests for the Orber Book functionality
     """
-    def test_valid_returned_value(self):
-        testOrdersList = ['1000 I 100 10.0',
-                          '2000 I 101 13.0',
-                          '2200 I 102 13.0',
-                          '2400 E 101',
-                          '2500 E 102',
-                          '4000 E 100']
+    def test_valid_orders_buy_and_sell_count(self):
+
+        testOrdersNum = 100
+        testBuyOrdersList = [ str(time.time())+' B '+ str(i) + ' ' + str(i/7.0) for i in range(1, testOrdersNum + 1)]
+        testSellOrdersList = [ str(time.time())+' S '+ str(i + testOrdersNum/2) +' '+ str(i/7.0) for i in range(1, testOrdersNum + 1)]
+
+        testOrdersList = testBuyOrdersList + testSellOrdersList
+        np.random.shuffle(testOrdersList)
+        
+
+        order = OrderBook()
+        for i in testOrdersList:
+            order.processOrder(i)
+
+        self.assertTrue(order.getTotalBuyOrdersCount() == testOrdersNum)
+        self.assertTrue(order.getTotalSellOrdersCount() == testOrdersNum)
+        self.assertTrue(order.getTotalOrdersCount() == testOrdersNum*2)
+
+    def test_valid_remaining_buy_and_sell_orders(self):
+        testOrdersList =   ['1000 B 100 17.0',
+                            '2000 B 101 11.0',
+                            '2200 B 102 12.0',
+                            '2400 S 103 13.0',
+                            '2500 S 104 10.0',
+                            '4000 B 105 11.0',
+                            '6000 S 106 11.0',
+                            '6000 S 107 12.0',
+                            '6200 B 109 13.0',
+                            '7000 S 110 20.0',
+                            ]
+
         order = OrderBook()
         for i in testOrdersList:
             order.processOrder(i)
         
-
-        return_value = order.getTimeWeightedAverage()
-        self.assertTrue(return_value == 10.5)
-
-    def test_valid_returned_value_empty_periods(self):
-        testOrdersList = ['1000 I 100 10.0',
-                          '2000 I 101 13.0',
-                          '2200 I 102 13.0',
-                          '2400 E 101',
-                          '2500 E 102',
-                          '4000 E 100',
-                          '6000 I 105 16.0',
-                          '6000 I 106 20.0',
-                          '6000 E 106',
-                          '6200 E 105',
-                          ]
-        order = OrderBook()
-        for i in testOrdersList:
-            order.processOrder(i)
-        
-
-        return_value = order.getTimeWeightedAverage()
-        self.assertTrue(return_value == 10.84375)
+        self.assertTrue(order.getOutstandingBuyOrdersCount() == 2)
+        self.assertTrue(order.getOutstandingSellOrdersCount() == 2)
 
     def test_valid_order_extra_input(self):
-        testOrdersList = ['1000 I 100 10.0 1',
-                          '2000 I 101 13.0',
-                          ]
+        testOrdersList =   ['1000 B 100 17.0',
+                            '2000 S 101 11.0 6'
+                            ]
+        
+        with self.assertRaises(ValueError):
+            order = OrderBook()
+            for i in testOrdersList:
+                order.processOrder(i)
+
+    def test_valid_order_price(self):
+        testOrdersList =   ['1000 B 100 aa',
+                            '2000 S 101 11.0'
+                            ]
         
         with self.assertRaises(ValueError):
             order = OrderBook()
@@ -55,58 +69,18 @@ class TestNextNum(unittest.TestCase):
                 order.processOrder(i)
 
     def test_valid_order_operation_type(self):
-        testOrdersList = ['1000 I 100 10.0',
-                          '2000 S 101 13.0',
-                          ]
+        testOrdersList =   ['1000 B 100 17.0',
+                            '2000 C 101 11.0',
+                            '2200 B 102 12.0',
+                            '2400 S 103 13.0',
+                            '2500 S 104 10.0',
+                            ]
         
         with self.assertRaises(ValueError):
             order = OrderBook()
             for i in testOrdersList:
                 order.processOrder(i)
 
-    def test_valid_delete_order(self):
-        testOrdersList = ['1000 E 100',
-                          '2000 I 100 13.0',
-                          ]
-        
-        with self.assertRaises(ValueError):
-            order = OrderBook()
-            for i in testOrdersList:
-                order.processOrder(i)
-
-    def test_valid_order_count(self):
-        testOrdersList = ['1000 I 100 10.0',
-                          '2000 I 101 13.0',
-                          '2200 I 102 13.0',
-                          '2400 E 101',
-                          '2500 E 102'
-                          ]
-        order = OrderBook()
-        for i in testOrdersList:
-            order.processOrder(i)
-
-        return_value = order.getOrdersCount()
-        self.assertTrue(return_value == 1)
-
-    def test_valid_highest_order_price(self):
-        testOrdersList = ['1000 I 100 10.0',
-                          '2000 I 101 13.0',
-                          '2200 I 102 13.0',
-                          '2400 E 101',
-                          '2500 E 102'
-                          ]
-        order = OrderBook()
-        for i in testOrdersList:
-            order.processOrder(i)
-
-        return_value = order.getHighestPrice()
-        self.assertTrue(return_value == 10.0)
-
-    def test_valid_order_list_empty(self):
-        order = OrderBook()
-
-        with self.assertRaises(ValueError):
-            return_value = order.getTimeWeightedAverage()
 
 if __name__ == "__main__":
     unittest.main()
